@@ -1,0 +1,16 @@
+{
+ "victim": "cs1",
+ "degraded_detected_s": 2.4,
+ "fully_replicated_again_s": 2.6,
+ "chunks": 7,
+ "all_chunks_3_live_replicas": true,
+ "repairs_committed": 4,
+ "repaired_chunks_version_bumped": 4,
+ "returned_server_stale_chunks_left": [],
+ "visible": 120,
+ "duplicates": 0,
+ "lost": 0,
+ "mismatch": 0,
+ "checker_ok": true,
+ "ok": true
+}

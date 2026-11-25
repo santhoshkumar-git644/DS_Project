@@ -1,0 +1,29 @@
+[
+ {
+  "config": "1 client, sequential replica writes",
+  "appends_per_s": 19.0,
+  "total_p50_ms": 43.7,
+  "total_p95_ms": 100.8,
+  "begin_p50_ms": 10.4,
+  "write_p50_ms": 15.3,
+  "commit_p50_ms": 17.2
+ },
+ {
+  "config": "1 client, parallel replica writes",
+  "appends_per_s": 19.7,
+  "total_p50_ms": 43.9,
+  "total_p95_ms": 97.9,
+  "begin_p50_ms": 11.9,
+  "write_p50_ms": 7.5,
+  "commit_p50_ms": 21.4
+ },
+ {
+  "config": "3 concurrent clients, parallel writes",
+  "appends_per_s": 46.0,
+  "total_p50_ms": 61.4,
+  "total_p95_ms": 106.0,
+  "begin_p50_ms": 16.6,
+  "write_p50_ms": 11.3,
+  "commit_p50_ms": 28.9
+ }
+]

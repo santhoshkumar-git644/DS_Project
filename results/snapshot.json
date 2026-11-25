@@ -1,0 +1,15 @@
+{
+ "leader": "m1",
+ "lagging_follower": "m2",
+ "leader_snap_index": 280,
+ "leader_log_entries_kept": 37,
+ "leader_commit": 317,
+ "follower_caught_up_s": 1.3,
+ "follower_installed_snapshot": true,
+ "follower_snap_index": 280,
+ "new_leader_after_kill": "m3",
+ "visible": 170,
+ "duplicates": 0,
+ "lost": 0,
+ "ok": true
+}

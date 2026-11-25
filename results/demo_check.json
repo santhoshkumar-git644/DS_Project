@@ -1,0 +1,26 @@
+{
+ "dashboard_serves_state": true,
+ "leader_changed_via_button": true,
+ "crash_narrated": true,
+ "verify_seconds": 0.7,
+ "verify_exactly_once": {
+  "acked": 167,
+  "visible": 167,
+  "duplicates": 0,
+  "lost": 0,
+  "mismatch": 0,
+  "in_flight": 0,
+  "ok": true
+ },
+ "verify_at_least_once": {
+  "acked": 165,
+  "visible": 166,
+  "duplicates": 1,
+  "lost": 0,
+  "mismatch": 0,
+  "in_flight": 0,
+  "ok": false
+ },
+ "ports_busy_after_hard_kill": 8,
+ "ports_busy_after_cleanup": 0
+}

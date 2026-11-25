@@ -1,0 +1,19 @@
+{
+ "isolated_leader": "m3",
+ "new_leader": "m2",
+ "new_leader_elected_s": 0.78,
+ "old_leader_stepped_down_s": 1.1,
+ "old_master_rejoined_s": 0.12,
+ "final_leader": "m2",
+ "final_term": 2,
+ "terms_advanced": 1,
+ "masters_agree": true,
+ "sent": 120,
+ "acked": 120,
+ "visible": 120,
+ "duplicates": 0,
+ "lost": 0,
+ "retries": 0,
+ "client_errors": 0,
+ "ok": true
+}

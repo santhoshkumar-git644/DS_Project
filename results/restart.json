@@ -1,0 +1,8 @@
+{
+ "restarted_client_resumes_at_seq": 31,
+ "visible": 35,
+ "duplicates": 0,
+ "lost": 0,
+ "retry_status_after_restart": "committed",
+ "ok": true
+}
