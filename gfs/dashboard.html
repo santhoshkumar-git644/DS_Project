@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GFS Live Dashboard</title>
+<style>
+  :root {
+    --bg: #f6f6f3; --card: #ffffff; --ink: #1c1c1a; --mute: #6b6b64; --line: #e2e2dc;
+    --good: #1f8a4c; --warn: #b7791f; --bad: #c0392b; --accent: #2f6fdb;
+    --good-bg: #e3f3ea; --warn-bg: #faf0d9; --bad-bg: #f9e3e0; --accent-bg: #e1ebfb;
+    --btn: #f0f0eb; --btn-hover: #e6e6df;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141413; --card: #1e1e1c; --ink: #ecece6; --mute: #9a9a92; --line: #33332f;
+      --good: #4cc27f; --warn: #e0a93f; --bad: #ef6b5b; --accent: #6ea1ff;
+      --good-bg: #17301f; --warn-bg: #3a2d12; --bad-bg: #3b1b17; --accent-bg: #172a4a;
+      --btn: #2a2a27; --btn-hover: #34342f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  header { display: flex; align-items: center; gap: 16px; padding: 14px 24px;
+           border-bottom: 1px solid var(--line); flex-wrap: wrap; position: sticky; top: 0;
+           background: var(--bg); z-index: 5; }
+  h1 { font-size: 18px; margin: 0; font-weight: 650; }
+  h2 { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--mute);
+       margin: 22px 0 8px; font-weight: 600; }
+  main { padding: 0 24px 40px; max-width: 1240px; margin: 0 auto; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+          padding: 12px 14px; min-width: 150px; flex: 1; }
+  .card .name { font-weight: 650; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+  .sub { color: var(--mute); font-size: 12px; margin-top: 2px; }
+  .big { font-size: 26px; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .pill { display: inline-block; padding: 1px 9px; border-radius: 99px; font-size: 12px;
+          font-weight: 600; white-space: nowrap; }
+  .good { color: var(--good); background: var(--good-bg); }
+  .warn { color: var(--warn); background: var(--warn-bg); }
+  .bad { color: var(--bad); background: var(--bad-bg); }
+  .acc { color: var(--accent); background: var(--accent-bg); }
+  .down { opacity: .6; }
+  table { width: 100%; border-collapse: collapse; background: var(--card);
+          border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  th, td { text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--line);
+           font-size: 13px; vertical-align: middle; }
+  th { color: var(--mute); font-weight: 600; font-size: 12px; }
+  tr:last-child td { border-bottom: 0; }
+  .chip { display: inline-block; padding: 0 8px; margin-right: 4px; border-radius: 6px;
+          font-size: 12px; font-weight: 600; }
+  .bar { height: 6px; background: var(--line); border-radius: 3px; width: 90px; }
+  .bar > i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+  .log { background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+         max-height: 300px; overflow: auto; font: 12.5px/1.6 ui-monospace, Consolas, monospace; }
+  .log div { padding: 2px 12px; border-bottom: 1px solid var(--line); }
+  .t { color: var(--mute); margin-right: 8px; font-variant-numeric: tabular-nums; }
+  .empty { color: var(--mute); padding: 14px; }
+  button { font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 8px; cursor: pointer;
+           border: 1px solid var(--line); background: var(--btn); color: var(--ink); }
+  button:hover { background: var(--btn-hover); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.danger { border-color: var(--bad); color: var(--bad); }
+  button.small { font-size: 11.5px; padding: 1px 8px; border-radius: 6px; }
+  button:disabled { opacity: .5; cursor: default; }
+  .controls { display: grid; gap: 10px; background: var(--card); border: 1px solid var(--line);
+              border-radius: 10px; padding: 12px 14px; }
+  .controls .grp { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .controls .lbl { width: 150px; color: var(--mute); font-size: 12px; font-weight: 600; }
+  .story { border-radius: 10px; padding: 12px 16px; border: 1px solid var(--line);
+           background: var(--card); }
+  .story .now { font-size: 16px; font-weight: 550; }
+  .story.good { border-color: var(--good); } .story.bad { border-color: var(--bad); }
+  .story.warn { border-color: var(--warn); }
+  .story .older { margin-top: 6px; color: var(--mute); font-size: 12.5px; }
+  .verdict { font-size: 18px; font-weight: 700; }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 760px) { .two { grid-template-columns: 1fr; } .controls .lbl { width: 100%; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Exactly-Once GFS &middot; live cluster</h1>
+  <span id="leader"></span>
+  <span id="busy"></span>
+  <span id="updated" class="t" style="margin-left:auto;font-size:12px"></span>
+</header>
+<main>
+  <div id="ctlwrap" hidden>
+    <h2>What is happening</h2>
+    <div class="story" id="story"></div>
+
+    <h2>Controls</h2>
+    <div class="controls">
+      <div class="grp"><span class="lbl">Client workloads</span>
+        <button id="w-eo" onclick="toggleWorkload('exactly-once')"></button>
+        <button id="w-alo" onclick="toggleWorkload('at-least-once')"></button>
+      </div>
+      <div class="grp"><span class="lbl">Crash the leader&hellip;</span>
+        <button onclick="act('crash_leader',{point:'master.before_intent'})">before it logs the intent</button>
+        <button onclick="act('crash_leader',{point:'master.after_intent'})">after the intent</button>
+        <button onclick="act('crash_leader',{point:'master.before_done'})">before completion</button>
+        <button class="danger" onclick="act('crash_leader',{point:'master.after_done'})">after completion, before the ack</button>
+      </div>
+      <div class="grp"><span class="lbl">Other failures</span>
+        <button onclick="act('crash_chunkserver')">Chunk server dies mid-write</button>
+        <button onclick="act('kill_replica')">Kill a chunk server (repair)</button>
+        <button onclick="act('partition')">Partition the leader</button>
+        <button onclick="act('heal')">Heal partition</button>
+        <label class="sub" style="display:flex;gap:6px;align-items:center;margin-left:6px">
+          <input type="checkbox" id="autorestart" onchange="act('auto_restart',{on:this.checked})">
+          auto-restart crashed nodes</label>
+      </div>
+      <div class="grp"><span class="lbl">Check the result</span>
+        <button class="primary" onclick="act('verify')">Verify now (run the checker)</button>
+        <button id="autoplay" onclick="act('autoplay')">&#9654; Run full scenario</button>
+      </div>
+    </div>
+
+    <div class="two">
+      <div><h2>Client workloads</h2><div class="row" id="workloads"></div></div>
+      <div><h2>Checker result</h2><div id="verify"></div></div>
+    </div>
+  </div>
+
+  <h2>Master group (Raft)</h2>
+  <div class="row" id="masters"></div>
+
+  <h2>Chunk servers</h2>
+  <div class="row" id="servers"></div>
+
+  <h2>Append reliability</h2>
+  <div class="row" id="counters"></div>
+
+  <h2>Chunk replicas</h2>
+  <div id="chunks"></div>
+
+  <h2>Events</h2>
+  <div class="log" id="events"></div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const clock = ts => new Date(ts * 1000).toLocaleTimeString([], {hour12: false});
+let S = null;
+
+async function act(name, args = {}) {
+  try {
+    const r = await (await fetch('/action/' + name, {method: 'POST', body: JSON.stringify(args)})).json();
+    if (r.error) alert(r.error);
+  } catch (e) { alert('dashboard unreachable'); }
+  tick();
+}
+function toggleWorkload(mode) {
+  const w = S && S.controls && S.controls.workloads[mode];
+  act('workload', {mode, on: !(w && w.running)});
+}
+
+function counter(label, value) {
+  return `<div class="card"><div class="sub">${label}</div><div class="big">${value}</div></div>`;
+}
+function nodeButtons(node) {
+  if (!S.controls) return '';
+  return S.controls.alive[node]
+    ? `<button class="small danger" onclick="act('kill',{node:'${node}'})">kill</button>`
+    : `<button class="small" onclick="act('restart',{node:'${node}'})">restart</button>`;
+}
+const QUIET = new Set(['server_up']);
+function describe(e) {
+  const skip = new Set(['seq', 'ts', 'node', 'kind']);
+  const rest = Object.entries(e).filter(([k]) => !skip.has(k))
+                     .map(([k, v]) => `${k}=${esc(Array.isArray(v) ? v.join(',') : v)}`).join(' ');
+  return `<span class="t">${clock(e.ts)}</span><b>${esc(e.node)}</b> ${esc(e.kind)} ${rest}`;
+}
+
+function renderControls(c) {
+  $('ctlwrap').hidden = false;
+  const n = c.notes;
+  $('story').className = 'story ' + (n.length ? n[0].level : '');
+  $('story').innerHTML = n.length
+    ? `<div class="now"><span class="t">${clock(n[0].ts)}</span>${esc(n[0].text)}</div>` +
+      n.slice(1, 4).map(x => `<div class="older"><span class="t">${clock(x.ts)}</span>${esc(x.text)}</div>`).join('')
+    : '<div class="now">Starting&hellip;</div>';
+  const eo = c.workloads['exactly-once'], alo = c.workloads['at-least-once'];
+  $('w-eo').textContent = eo.running ? 'Stop exactly-once clients' : 'Start exactly-once clients';
+  $('w-alo').textContent = alo.running ? 'Stop at-least-once clients' : 'Start at-least-once clients (plain GFS)';
+  $('autorestart').checked = c.auto_restart;
+  $('autoplay').disabled = !!c.busy;
+  $('busy').innerHTML = c.busy ? '<span class="pill acc">autoplay running</span>' : '';
+
+  $('workloads').innerHTML = Object.values(c.workloads).map(w =>
+    `<div class="card"><div class="name">${esc(w.mode)} ` +
+    (w.running ? '<span class="pill good">running</span>' : '<span class="pill">stopped</span>') +
+    `</div><div class="sub">${esc(w.file)} &middot; ` +
+    (w.mode === 'exactly-once' ? 'same ID on retry' : 'new ID on retry') + `</div>` +
+    `<div class="big">${w.acked}</div><div class="sub">acked &middot; ${w.retries} retries &middot; ` +
+    `${w.in_flight} in flight</div></div>`).join('');
+
+  const v = c.verify;
+  $('verify').innerHTML = v ? '<table><tr><th>workload</th><th>acked</th><th>visible</th>' +
+    '<th title="committed, ack not yet received by the client">in flight</th>' +
+    '<th>duplicates</th><th>lost</th><th></th></tr>' +
+    Object.entries(v.results).map(([m, r]) => `<tr><td>${esc(m)}</td><td>${r.acked}</td>` +
+      `<td>${r.visible}</td><td>${r.in_flight ?? 0}</td>` +
+      `<td><b>${r.duplicates}</b></td><td><b>${r.lost}</b></td><td>` +
+      (r.ok ? '<span class="pill good">exactly once</span>'
+            : `<span class="pill bad">${r.duplicates ? 'duplicates' : 'violation'}</span>`) +
+      `</td></tr>`).join('') + `</table><div class="sub" style="margin-top:6px">checked at ${clock(v.ts)}: ` +
+      'stored records read back from every replica and compared with each client&rsquo;s acknowledged-request log</div>'
+    : '<div class="card empty">Press &ldquo;Verify now&rdquo; to compare what the cluster stores with what clients were told.</div>';
+}
+
+async function tick() {
+  let s;
+  try { s = await (await fetch('/state')).json(); } catch (e) { return; }
+  S = s;
+  $('updated').textContent = 'updated ' + clock(s.ts);
+  if (s.controls) renderControls(s.controls);
+
+  const term = s.leader ? s.masters[s.leader].status.term : null;
+  $('leader').innerHTML = s.leader
+    ? `<span class="pill good">leader ${esc(s.leader)} &middot; term ${term}</span>`
+    : `<span class="pill bad">no leader (election in progress)</span>`;
+
+  $('masters').innerHTML = Object.entries(s.masters).map(([m, v]) => {
+    const st = v.status;
+    const role = !v.up ? '<span class="pill bad">DOWN</span>'
+      : st.role === 'leader' ? '<span class="pill good">leader</span>'
+      : st.role === 'candidate' ? '<span class="pill warn">candidate</span>'
+      : '<span class="pill acc">follower</span>';
+    const cut = v.up && st && st.partitioned_from && st.partitioned_from.length
+      ? '<span class="pill warn">partitioned</span>' : '';
+    const sub = v.up && st
+      ? `term ${st.term} &middot; commit ${st.commit} &middot; log ${st.log_entries} entries` +
+        (st.snap_index ? ` + snapshot @${st.snap_index}` : '')
+      : 'unreachable';
+    return `<div class="card ${v.up ? '' : 'down'}"><div class="name">${m} ${role} ${cut} ` +
+           `<span style="margin-left:auto">${nodeButtons(m)}</span></div>` +
+           `<div class="sub">${sub}</div></div>`;
+  }).join('');
+
+  const ids = Object.keys(s.servers).length ? Object.keys(s.servers) : [];
+  $('servers').innerHTML = ids.map(id => { const v = s.servers[id];
+    return `<div class="card ${v.live ? '' : 'down'}"><div class="name">${id} ` +
+    (v.live ? '<span class="pill good">alive</span>' : '<span class="pill bad">DEAD</span>') +
+    `<span style="margin-left:auto">${nodeButtons(id)}</span></div>` +
+    `<div class="sub">${v.chunks} chunk replicas` +
+    (v.age != null ? ` &middot; heartbeat ${v.age}s ago` : '') + `</div></div>`; }).join('')
+    || '<div class="empty">waiting for the leader&hellip;</div>';
+
+  const st = s.stats, degraded = s.chunks.filter(c => c.health !== 'healthy').length;
+  $('counters').innerHTML =
+    counter('records committed', st.committed ?? 0) +
+    counter('retries recognised (dedup hits)', st.dedup_hits ?? 0) +
+    counter('intents aborted', st.aborted ?? 0) +
+    counter('unfinished appends', s.pending) +
+    counter('chunks not fully replicated', degraded) +
+    counter('repairs completed', st.repairs ?? 0) +
+    counter('dedup table entries', s.dedup_size);
+
+  const badge = h => h === 'healthy' ? '<span class="pill good">healthy</span>'
+    : h === 'repairing' ? '<span class="pill acc">repairing</span>'
+    : '<span class="pill warn">degraded</span>';
+  const shown = s.chunks.slice().reverse().slice(0, 14);
+  $('chunks').innerHTML = s.chunks.length ? '<table><tr><th>chunk</th><th>file</th>' +
+    '<th>replicas</th><th>version</th><th>fill</th><th>state</th></tr>' +
+    shown.map(c => {
+      const chips = c.replicas.map(r =>
+        `<span class="chip ${c.live.includes(r) ? 'good' : 'bad'}">${r}</span>`).join('');
+      const pct = Math.min(100, Math.round(100 * c.used / s.chunk_size));
+      return `<tr><td>#${c.id}${c.sealed ? ' <span class="sub">sealed</span>' : ''}</td>` +
+             `<td>${esc(c.file)}</td><td>${chips}</td><td>v${c.version}</td>` +
+             `<td><div class="bar"><i style="width:${pct}%"></i></div></td>` +
+             `<td>${badge(c.health)}</td></tr>`;
+    }).join('') + '</table>' +
+    (s.chunks.length > shown.length ? `<div class="sub" style="margin-top:6px">newest ${shown.length} of ${s.chunks.length} chunks</div>` : '')
+    : '<div class="empty">no chunks yet &mdash; start a workload</div>';
+
+  const evs = s.events.filter(e => !QUIET.has(e.kind)).slice(0, 80);
+  $('events').innerHTML = evs.length
+    ? evs.map(e => `<div>${describe(e)}</div>`).join('')
+    : '<div class="empty">no events yet</div>';
+}
+tick(); setInterval(tick, 500);
+</script>
+</body>
+</html>
